@@ -5,16 +5,22 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Entity\PullRequest;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Workflow\Exception\ExceptionInterface;
+use Symfony\Component\Workflow\StateMachine;
 
 /**
  * @Route("/pr")
  */
 class PullRequestController extends AbstractController
 {
+    public function __construct(private StateMachine $pullRequestStateMachine, private EntityManagerInterface $em)
+    {
+    }
+
     /**
      * @Route("", name="pull_request_index")
      */
@@ -55,121 +61,21 @@ class PullRequestController extends AbstractController
     }
 
     /**
-     * @Route("/submit/{id}", methods={"GET"}, name="pull_request_submit")
+     * @Route("/pr-apply-transition/{id}", methods={"POST"}, name="pull_request_apply_transition")
      */
-    public function submitAction(PullRequest $pullRequest)
+    public function applyTransitionAction(Request $request, PullRequest $pullRequest)
     {
-        if (!$pullRequest->getPreSubmit()) {
-            throw new BadRequestHttpException('You cannot submit a pull request that is already submitted. ');
+        try {
+            $this->pullRequestStateMachine
+                ->apply($pullRequest, $request->request->get('transition'));
+
+            $this->em->flush();
+        } catch (ExceptionInterface $e) {
+            $this->addFlash('danger', $e->getMessage());
         }
 
-        $pullRequest->setPreSubmit(false);
-        $pullRequest->setOpen(true);
-
-        $em = $this->get('doctrine')->getManager();
-        $em->persist($pullRequest);
-        $em->flush();
-
-        return $this->redirectToRoute('pull_request_show', ['id'=>$pullRequest->getId()]);
-    }
-
-    /**
-     * @Route("/close/{id}", methods={"GET"}, name="pull_request_close")
-     */
-    public function closeAction(PullRequest $pullRequest)
-    {
-        if (!$pullRequest->getOpen()) {
-            throw new BadRequestHttpException('You cannot close a pull request that not open.');
-        }
-
-        $pullRequest->setClosed(true);
-        $pullRequest->setOpen(false);
-
-        $em = $this->get('doctrine')->getManager();
-        $em->persist($pullRequest);
-        $em->flush();
-
-        return $this->redirectToRoute('pull_request_show', ['id'=>$pullRequest->getId()]);
-    }
-
-    /**
-     * @Route("/reopen/{id}", methods={"GET"}, name="pull_request_reopen")
-     */
-    public function reopenAction(PullRequest $pullRequest)
-    {
-        if (!$pullRequest->getClosed()) {
-            throw new BadRequestHttpException('You cannot open a pull request that not closed.');
-        }
-
-        $pullRequest->setClosed(false);
-        $pullRequest->setOpen(true);
-
-        $em = $this->get('doctrine')->getManager();
-        $em->persist($pullRequest);
-        $em->flush();
-
-        return $this->redirectToRoute('pull_request_show', ['id'=>$pullRequest->getId()]);
-    }
-
-    /**
-     * @Route("/lock/{id}", methods={"GET"}, name="pull_request_lock")
-     */
-    public function lockAction(PullRequest $pullRequest)
-    {
-        if ($pullRequest->getPreSubmit()) {
-            throw new BadRequestHttpException('You cannot lock a pull request that not submitted.');
-        }
-
-        if (!$this->isGranted('ROLE_ADMIN')) {
-            throw new BadRequestHttpException('Only admin can lock a pull request');
-        }
-
-        $pullRequest->setLocked(true);
-
-        $em = $this->get('doctrine')->getManager();
-        $em->persist($pullRequest);
-        $em->flush();
-
-        return $this->redirectToRoute('pull_request_show', ['id'=>$pullRequest->getId()]);
-    }
-
-    /**
-     * @Route("/merge/{id}", methods={"GET"}, name="pull_request_merge")
-     */
-    public function mergeAction(PullRequest $pullRequest)
-    {
-        if (!$pullRequest->getOpen()) {
-            throw new BadRequestHttpException('You cannot merge a pull request that not open.');
-        }
-
-        // TODO verify that the current user has permission to merge. Is that user admin or maintainer?
-
-        $pullRequest->setMerged(true);
-        $pullRequest->setOpen(false);
-
-        $em = $this->get('doctrine')->getManager();
-        $em->persist($pullRequest);
-        $em->flush();
-
-        return $this->redirectToRoute('pull_request_show', ['id'=>$pullRequest->getId()]);
-    }
-
-    /**
-     * @Route("/comment/{id}", methods={"POST"}, name="pull_request_comment")
-     */
-    public function commentAction(PullRequest $pullRequest)
-    {
-        if ($pullRequest->getLocked()) {
-            // TODO maybe only the author and admin can comment
-            throw new BadRequestHttpException('You cannot comment on a locked pull request.');
-        }
-
-        // There is no need to implement this action. That is out of scope of the workshop.
-
-        $em = $this->get('doctrine')->getManager();
-        $em->persist($pullRequest);
-        $em->flush();
-
-        return $this->redirectToRoute('pull_request_show', ['id'=>$pullRequest->getId()]);
+        return $this->redirect(
+            $this->generateUrl('pull_request_show', ['id' => $pullRequest->getId()])
+        );
     }
 }

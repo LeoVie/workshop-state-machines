@@ -8,6 +8,7 @@ services:
         public: false
         bind:
             Symfony\Component\Workflow\StateMachine $trafficLightStateMachine: '@state_machine.traffic_light'
+            Symfony\Component\Workflow\StateMachine $pullRequestStateMachine: '@state_machine.pull_request'
             Symfony\Component\Workflow\StateMachine $signupStateMachine: '@state_machine.signup'
             Symfony\Component\Workflow\Workflow $articleWorkflow: '@workflow.article'
 
@@ -19,11 +20,6 @@ services:
         resource: '../src/Controller'
         tags: ['controller.service_arguments']
 
-    state_machine.traffic_light_php:
-        public: true
-        class: Symfony\Component\Workflow\StateMachine
-        factory: [App\Workflow\TrafficLightFactory, create]
-
 sensio_framework_extra:
     router:
         annotations: false
@@ -32,6 +28,7 @@ framework:
     workflows:
         traffic_light:
             supports: App\Entity\TrafficLight
+            type: state_machine
             marking_store:
                 type: 'method'
                 property: 'state'
@@ -43,14 +40,38 @@ framework:
                 to_green:
                     from: yellow
                     to: green
-                to_yellow_foo:
-                    name: to_yellow
-                    from: green
-                    to: yellow
-                to_yellow_bar:
-                    name: to_yellow
-                    from: red
+                to_yellow:
+                    from: [ green, red ]
                     to: yellow
                 to_red:
                     from: yellow
                     to: red
+
+        pull_request:
+            supports: App\Entity\PullRequest
+            type: state_machine
+            marking_store:
+                type: 'method'
+                property: 'state'
+            places:
+                - preSubmitted
+                - open
+                - closed
+                - locked
+                - merged
+            transitions:
+                submit:
+                    from: preSubmitted
+                    to: open
+                close:
+                    from: open
+                    to: closed
+                reopen:
+                    from: [closed, locked]
+                    to: open
+                lock:
+                    from: [open, closed]
+                    to: locked
+                merge:
+                    from: open
+                    to: merged

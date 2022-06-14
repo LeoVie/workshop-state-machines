@@ -24,7 +24,7 @@ class TrafficLightGuard implements EventSubscriberInterface
     public static function getSubscribedEvents()
     {
         return [
-            'workflow.traffic_light.guard.to_red'=>'onTransition'
+            'workflow.traffic_light.guard.to_red' => 'onTransition',
         ];
     }
 
