@@ -23,20 +23,13 @@ class TrafficLightStateMachine
      */
     public function can(string $transition): bool
     {
-        if ($this->state === self::GREEN) {
-            return $transition === self::TO_YELLOW;
-        }
-
-        if ($this->state === self::YELLOW) {
-            return $transition === self::TO_GREEN
-                || $transition === self::TO_RED;
-        }
-
-        if ($this->state === self::RED) {
-            return $transition === self::TO_YELLOW;
-        }
-
-        return false;
+        return match ($this->state) {
+            self::GREEN,
+            self::RED => $transition === self::TO_YELLOW,
+            self::YELLOW => $transition === self::TO_GREEN
+                || $transition === self::TO_RED,
+            default => false,
+        };
     }
 
     /**
