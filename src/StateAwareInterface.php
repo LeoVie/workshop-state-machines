@@ -6,7 +6,7 @@ namespace App;
 
 interface StateAwareInterface
 {
-    public function getState(): string;
     public function setState(string $state): void;
 
+    public function getState(): string;
 }

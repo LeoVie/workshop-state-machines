@@ -8,9 +8,18 @@ use App\StateAwareInterface;
 
 class TrafficLight implements StateAwareInterface
 {
-    private $state;
+    public const GREEN = 'green';
+    public const YELLOW = 'yellow';
+    public const RED = 'red';
 
-    public function __construct(string $state = 'red')
+    private string $state;
+
+    public function __construct(string $state = self::RED)
+    {
+        $this->state = $state;
+    }
+
+    public function setState(string $state): void
     {
         $this->state = $state;
     }
@@ -18,10 +27,5 @@ class TrafficLight implements StateAwareInterface
     public function getState(): string
     {
         return $this->state;
-    }
-
-    public function setState(string $state): void
-    {
-        $this->state = $state;
     }
 }

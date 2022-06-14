@@ -6,53 +6,51 @@ namespace App;
 
 class StateMachine
 {
-    /**
-     * @var array with data that holds data about from/to state and transitions.
-     *            array('from_state' => ['transition' => 'to_state'])
-     */
-    private $transitions;
-
-    public function __construct(array $transitions)
+    public function __construct(private array $transitions)
     {
-        $this->transitions = $transitions;
     }
 
     /**
      * Check if we are allowed to apply $state right now. Ie, is there an transition
      * from $this->state to $state?
      */
-    public function can(StateAwareInterface $object, string $transition): bool
+    public function can(StateAwareInterface $stateAwareObject, string $transition): bool
     {
-        $state = $object->getState();
+        if (!array_key_exists($stateAwareObject->getState(), $this->transitions)) {
+            return false;
+        }
 
-        return isset($this->transitions[$state][$transition]);
+        $transitionsForCurrentState = $this->transitions[$stateAwareObject->getState()];
+        if (!array_key_exists($transition, $transitionsForCurrentState)) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
      * @throws \InvalidArgumentException if the $newState is invalid.
      */
-    public function apply(StateAwareInterface $object, $transition): void
+    public function apply(StateAwareInterface $stateAwareObject, string $transition): void
     {
-        if (!$this->can($object, $transition)) {
-            throw new \InvalidArgumentException(sprintf('Invalid transition "%s" when in state "%s".', $transition, $object->getState()));
+        if (!$this->can($stateAwareObject, $transition)) {
+            throw new \InvalidArgumentException("Invalid transition '$transition'.");
         }
 
-        $state = $object->getState();
-        $newState = $this->transitions[$state][$transition];
-        $object->setState($newState);
+        $transitionsForCurrentState = $this->transitions[$stateAwareObject->getState()];
+
+        $stateAwareObject->setState($transitionsForCurrentState[$transition]);
     }
 
-    public function getCurrentState(StateAwareInterface $object): string
+    public function getCurrentState(StateAwareInterface $stateAwareObject): string
     {
-        // TODO write me
-
-        return '';
+        return $stateAwareObject->getState();
     }
 
-    public function getValidTransitions(StateAwareInterface $object): array
+    public function getValidTransitions(StateAwareInterface $stateAwareObject): array
     {
-        // TODO write me
+        $transitionsForCurrentState = $this->transitions[$stateAwareObject->getState()];
 
-        return [];
+        return array_keys($transitionsForCurrentState);
     }
 }
