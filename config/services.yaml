@@ -7,7 +7,7 @@ services:
         autoconfigure: true
         public: false
         bind:
-            #Symfony\Component\Workflow\StateMachine $trafficLightStateMachine: '@state_machine.traffic_light'
+            Symfony\Component\Workflow\StateMachine $trafficLightStateMachine: '@workflow.traffic_light'
             Symfony\Component\Workflow\Workflow $articleWorkflow: '@workflow.article'
 
     App\:
@@ -26,3 +26,4 @@ services:
 sensio_framework_extra:
     router:
         annotations: false
+

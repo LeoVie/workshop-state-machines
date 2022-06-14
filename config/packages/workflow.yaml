@@ -1,3 +1,25 @@
 framework:
     workflows:
-      # traffic_light:
+        traffic_light:
+            type: state_machine
+            supports: App\Entity\TrafficLight
+            initial_marking: red
+            marking_store:
+                type: 'method'
+                property: 'state'
+            places:
+                - green
+                - yellow
+                - red
+            transitions:
+                to_green:
+                    from: yellow
+                    to: green
+                to_yellow:
+                    from:
+                        - green
+                        - red
+                    to: yellow
+                to_red:
+                    from: yellow
+                    to: red

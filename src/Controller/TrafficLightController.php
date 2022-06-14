@@ -9,6 +9,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Workflow\Exception\ExceptionInterface;
 use Symfony\Component\Workflow\StateMachine;
+use Symfony\Component\Workflow\Workflow;
 
 /**
  * @Route("/traffic-light")
@@ -18,9 +19,9 @@ class TrafficLightController extends AbstractController
     private $trafficLightStateMachine;
     private $em;
 
-    public function __construct(EntityManagerInterface $em /*,StateMachine $trafficLightStateMachine*/)
+    public function __construct(EntityManagerInterface $em, Workflow $trafficLightStateMachine)
     {
-        // $this->trafficLightStateMachine = $trafficLightStateMachine;
+        $this->trafficLightStateMachine = $trafficLightStateMachine;
         $this->em = $em;
     }
 
