@@ -6,11 +6,13 @@ namespace App\StateMachine;
 
 use App\Entity\User;
 use App\Service\MailerService;
+use App\StateMachine\State\FinalState;
 use App\StateMachine\State\StateInterface;
 
 class StateMachine implements StateMachineInterface
 {
     private $user;
+    /** @var StateInterface */
     private $state;
     private $mailer;
 
@@ -22,8 +24,17 @@ class StateMachine implements StateMachineInterface
 
     public function start(StateInterface $state): bool
     {
-        // TODO Implement me
-        // Run states until StateInterface::STOP
+        $result = $state->send($this, $this->mailer);
+
+        if ($result === StateInterface::STOP) {
+            if ($state instanceof FinalState) {
+                return true;
+            }
+
+            return false;
+        }
+
+        return $this->start($this->state);
     }
 
     public function getUser(): User

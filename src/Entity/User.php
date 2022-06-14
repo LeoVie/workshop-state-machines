@@ -10,6 +10,8 @@ class User
     private $name;
     private $email;
     private $twitter;
+    private ?\DateTimeImmutable $lastTimeNotifiedAboutEmail;
+    private ?\DateTimeImmutable $lastTimeNotifiedAboutName;
 
     /**
      * Convert a user to array (used when we store user in database)
@@ -21,6 +23,8 @@ class User
             'name' => $this->name,
             'email' => $this->email,
             'twitter' => $this->twitter,
+            'lastTimeNotifiedAboutEmail' => $this->lastTimeNotifiedAboutEmail?->format('Y-m-d H:i:s'),
+            'lastTimeNotifiedAboutName' => $this->lastTimeNotifiedAboutName?->format('Y-m-d H:i:s'),
         ];
     }
 
@@ -35,6 +39,8 @@ class User
         $user->name = $data['name'] ?? null;
         $user->email = $data['email'] ?? null;
         $user->twitter = $data['twitter'] ?? null;
+        $user->lastTimeNotifiedAboutEmail = $data['lastTimeNotifiedAboutEmail'] ? \DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $data['lastTimeNotifiedAboutEmail']) : null;
+        $user->lastTimeNotifiedAboutName = $data['lastTimeNotifiedAboutName'] ? \DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $data['lastTimeNotifiedAboutName']) : null;
 
         return $user;
     }
@@ -73,5 +79,25 @@ class User
     public function setTwitter(?string $twitter)
     {
         $this->twitter = $twitter;
+    }
+
+    public function getLastTimeNotifiedAboutEmail(): ?\DateTimeImmutable
+    {
+        return $this->lastTimeNotifiedAboutEmail;
+    }
+
+    public function setLastTimeNotifiedAboutEmail(?\DateTimeImmutable $lastTimeNotifiedAboutEmail): void
+    {
+        $this->lastTimeNotifiedAboutEmail = $lastTimeNotifiedAboutEmail;
+    }
+
+    public function getLastTimeNotifiedAboutName(): ?\DateTimeImmutable
+    {
+        return $this->lastTimeNotifiedAboutName;
+    }
+
+    public function setLastTimeNotifiedAboutName(?\DateTimeImmutable $lastTimeNotifiedAboutName): void
+    {
+        $this->lastTimeNotifiedAboutName = $lastTimeNotifiedAboutName;
     }
 }
