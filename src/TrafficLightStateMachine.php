@@ -6,6 +6,14 @@ namespace App;
 
 class TrafficLightStateMachine
 {
+    public const GREEN = 'green';
+    public const YELLOW = 'yellow';
+    public const RED = 'red';
+
+    public const TO_YELLOW = 'to_yellow';
+    public const TO_GREEN = 'to_green';
+    public const TO_RED = 'to_red';
+
     /** @var string State. (Exercise 1) This variable name is used in tests. Do not rename.  */
     private $state;
 
@@ -15,16 +23,20 @@ class TrafficLightStateMachine
      */
     public function can(string $transition): bool
     {
-        switch ($this->state) {
-            case 'green':
-                return ($transition === 'to_yellow');
-            case 'yellow':
-                return ($transition === 'to_green' || $transition === 'to_red');
-            case 'red':
-                return ($transition === 'to_yellow');
-            default:
-                return false;
+        if ($this->state === self::GREEN) {
+            return $transition === self::TO_YELLOW;
         }
+
+        if ($this->state === self::YELLOW) {
+            return $transition === self::TO_GREEN
+                || $transition === self::TO_RED;
+        }
+
+        if ($this->state === self::RED) {
+            return $transition === self::TO_YELLOW;
+        }
+
+        return false;
     }
 
     /**
@@ -35,22 +47,14 @@ class TrafficLightStateMachine
     public function apply(string $transition): void
     {
         if (!$this->can($transition)) {
-            throw new \InvalidArgumentException('Invalid transition');
+            throw new \InvalidArgumentException("Invalid transition '$transition'.");
         }
 
-        switch ($this->state) {
-            case 'green' && ($transition === 'to_yellow'):
-                $this->state = 'yellow';
-                break;
-            case 'yellow' && ($transition === 'to_green'):
-                $this->state = 'green';
-                break;
-            case 'yellow' && ($transition === 'to_red'):
-                $this->state = 'red';
-                break;
-            case 'red' && ($transition === 'to_yellow'):
-                $this->state = 'yellow';
-                break;
-        }
+        $this->state = match ($transition) {
+            self::TO_YELLOW => self::YELLOW,
+            self::TO_GREEN => self::GREEN,
+            self::TO_RED => self::RED,
+            default => throw new \InvalidArgumentException("Invalid transition '$transition'.")
+        };
     }
 }
