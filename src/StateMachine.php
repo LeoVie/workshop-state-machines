@@ -16,16 +16,7 @@ class StateMachine
      */
     public function can(StateAwareInterface $stateAwareObject, string $transition): bool
     {
-        if (!array_key_exists($stateAwareObject->getState(), $this->transitions)) {
-            return false;
-        }
-
-        $transitionsForCurrentState = $this->transitions[$stateAwareObject->getState()];
-        if (!array_key_exists($transition, $transitionsForCurrentState)) {
-            return false;
-        }
-
-        return true;
+        return in_array($transition, $this->getValidTransitions($stateAwareObject));
     }
 
     /**
