@@ -32,6 +32,8 @@ class StateMachine3Test extends TestCase
 
     /**
      * @dataProvider canProvider
+     *
+     * @group now
      */
     public function testCan(string $currentState, string $transition, bool $result)
     {

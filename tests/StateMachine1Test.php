@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\App;
 
-use App\TrafficLightStateMachine;
+use App\StateMachine;
 use Nyholm\NSA;
 use PHPUnit\Framework\TestCase;
 
@@ -15,7 +15,7 @@ class StateMachine1Test extends TestCase
      */
     public function testCan(string $currentState, string $transition, bool $result)
     {
-        $sm = new TrafficLightStateMachine();
+        $sm = new StateMachine();
 
         NSA::setProperty($sm, 'state', $currentState);
         if ($result) {
@@ -30,7 +30,7 @@ class StateMachine1Test extends TestCase
      */
     public function testApply(string $currentState, string $newState, string $exception = null)
     {
-        $sm = new TrafficLightStateMachine();
+        $sm = new StateMachine();
         if (null !== $exception) {
             $this->expectException($exception);
         }

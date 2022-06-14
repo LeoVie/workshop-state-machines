@@ -8,8 +8,16 @@ use App\StateAwareInterface;
 
 class TrafficLight implements StateAwareInterface
 {
-    /** @var string State. (Exercise 1) This variable name is used in tests. Do not rename.  */
-    private $state;
+    public const GREEN = 'green';
+    public const YELLOW = 'yellow';
+    public const RED = 'red';
+
+    private string $state;
+
+    public function __construct(string $state = self::RED)
+    {
+        $this->state = $state;
+    }
 
     public function setState(string $state): void
     {
